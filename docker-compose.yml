@@ -1,0 +1,22 @@
+services:
+  notebook:
+    build: .
+      # context: .
+      # dockerfile: Dockerfile
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    runtime: nvidia
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=all
+      - "JUPYTER_PASSWORD=${JUPYTER_PASSWORD:-simple}"
+    ports:
+      - "${JUPYTER_IP:-127.0.0.1}:${JUPYTER_PORT:-8883}:8883"
+    volumes:
+      - .:/src/tasks_and_others
+      # - /mnt/U19_NAS:/data
+      - $HOME/.ssh/id_ed25519:/root/.ssh/id_ed25519:ro

@@ -11,6 +11,7 @@ import chex
 from flax import struct
 from functools import partial
 import pdb
+
 class Actions(IntEnum):
     right = 0
     down = 1
@@ -62,6 +63,8 @@ class ToyCoop(MultiAgentEnv):
         self.held_out_other_goal_pos = None
         self.partial_obs = partial_obs
         self.incentivize_strat = incentivize_strat
+
+        
     def reset(self, key: chex.PRNGKey, params={'random_reset_fn': 'reset_all'}) -> Tuple[Dict[str, chex.Array], State]:
         """Reset environment state."""
         key1, key2 = jax.random.split(key)

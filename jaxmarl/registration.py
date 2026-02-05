@@ -11,7 +11,7 @@ from .environments import (
     # SimpleFacmacMPE9a,
     # SimplePushMPE,
     # SimpleAdversaryMPE,
-    # SimpleReferenceMPE,
+    SimpleReferenceMPE,
     # SMAX,
     # HeuristicEnemySMAX,
     # LearnedPolicyEnemySMAX,
@@ -27,6 +27,8 @@ from .environments import (
     Overcooked,
     # CoinGame,
     ToyCoop,
+    CoopForaging,
+    CoopForagingFixedOther
 )
 import inspect
 import pdb
@@ -45,8 +47,15 @@ def make(env_id: str, **env_kwargs):
         env_kwargs = filter_kwargs(env_kwargs, ToyCoop)
         env = ToyCoop(**env_kwargs)
 
+    elif env_id == "CoopForaging":
+        env_kwargs = filter_kwargs(env_kwargs, CoopForaging)
+        env = CoopForaging(**env_kwargs)
+    elif env_id == "CoopForagingFixedOther":
+        env_kwargs = filter_kwargs(env_kwargs, CoopForaging)
+        env = CoopForagingFixedOther(**env_kwargs)
+
     # 1. MPE PettingZoo Environments
-    if env_id == "MPE_simple_v3":
+    elif env_id == "MPE_simple_v3":
         env_kwargs = filter_kwargs(env_kwargs, SimpleMPE)
         env = SimpleMPE(**env_kwargs)
     elif env_id == "MPE_simple_tag_v3":
@@ -173,5 +182,6 @@ registered_envs = [
     "hanabi",
     "overcooked",
     "coin_game",
-    "ToyCoop"
+    "ToyCoop",
+    "CoopForaging"
 ]

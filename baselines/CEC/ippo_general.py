@@ -78,7 +78,7 @@ def initialize_environment(config):
         ho_wall = jnp.concatenate([res[1], ho_wall], axis=0)
         ho_pot = jnp.concatenate([res[2], ho_pot], axis=0)
         env.held_out_goal, env.held_out_wall, env.held_out_pot = (ho_goal, ho_wall, ho_pot)
-    elif config["ENV_NAME"] == "ToyCoop":
+    elif config["ENV_NAME"] == "ToyCoop" or config["ENV_NAME"] == "CoopForaging":
         # Generate 100 held-out states for ToyCoop
         @scan_tqdm(100)
         def gen_held_out_toycoop(runner_state, unused):
@@ -251,11 +251,17 @@ class Transition(NamedTuple):
 
 
 def batchify(x: dict, agent_list, num_actors):
+    """
+    Converts a dict of arrays (one per agent) into a single array
+    """
     x = jnp.stack([x[a] for a in agent_list])
     return x.reshape((num_actors, -1))
 
 
 def unbatchify(x: jnp.ndarray, agent_list, num_envs, num_actors):
+    """
+    Converts a single array into a dict of arrays (one per agent)
+    """
     x = x.reshape((num_actors, num_envs, -1))
     return {a: x[i] for i, a in enumerate(agent_list)}
 
@@ -340,10 +346,16 @@ def make_train(config, update_step=0):
         # TRAIN LOOP
         @scan_tqdm(int(config["NUM_UPDATES"]))
         def _update_step(update_runner_state, unused):
+            """
+            Called as part of a jax scan, update_runner_state tracks all the info needed, metric is per step
+            """
             # COLLECT TRAJECTORIES
             runner_state, update_steps = update_runner_state
 
             def _env_step(runner_state, unused):
+                """
+                Steps through one step of of environment for all actors, returns updated runner_state and transition
+                """
                 train_state, env_state, last_obs, last_done, hstate, rng, update_step = runner_state
 
                 # SELECT ACTION
@@ -705,6 +717,7 @@ def main(config):
 
     reward = metrics['returns']
     update_step = metrics['update_steps']
+    print(update_step)
     loss = metrics['loss']
     value_loss = loss['value_loss']
     actor_loss = loss['actor_loss']
