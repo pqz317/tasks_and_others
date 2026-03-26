@@ -157,7 +157,8 @@ class ActorCriticRNN(nn.Module):
         batch_size, num_envs, flattened_obs_dim = obs.shape
         if self.config["GRAPH_NET"]:
             if self.config["ENV_NAME"] == "overcooked":
-                reshaped_obs = obs.reshape(-1, 7,7,26)
+                grid_size = 9 if "9" in self.config["layout_name"] else 7
+                reshaped_obs = obs.reshape(-1, grid_size, grid_size, 26)
             else:
                 reshaped_obs = obs.reshape(-1, 5,5,4)
 
