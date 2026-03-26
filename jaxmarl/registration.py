@@ -183,5 +183,6 @@ registered_envs = [
     "overcooked",
     "coin_game",
     "ToyCoop",
-    "CoopForaging"
+    "CoopForaging",
+    "CoopForagingFixedOther"
 ]

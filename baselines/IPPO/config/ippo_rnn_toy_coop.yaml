@@ -1,5 +1,7 @@
 "ENV_NAME": "ToyCoop"  # ToyCoop or overcooked
-"LR": 3e-4
+# "LR": 3e-4
+"LR": 3e-5
+
 "NUM_ENVS": 64
 "NUM_SEEDS": 1
 "NUM_STEPS": 100

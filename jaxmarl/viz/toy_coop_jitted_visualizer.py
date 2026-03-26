@@ -8,9 +8,9 @@ import pdb
 TILE_PIXELS = 32
 
 # Define render function
-@jax.jit
-def render_fn(state):
-    data = render_state(state)
+@partial(jax.jit, static_argnames=['size']) 
+def render_fn(state, size=5):
+    data = render_state(state, size=size)
     return data
 
 def point_in_rect(xmin, xmax, ymin, ymax):
@@ -139,13 +139,13 @@ def render_grid(agent_pos, goal_pos, agent_dir_idx, height=5, width=5, tile_size
     
     return img
 
-@jax.jit
-def render_state(state, tile_size=TILE_PIXELS):
+@partial(jax.jit, static_argnames=['size']) 
+def render_state(state, size=5, tile_size=TILE_PIXELS):
     img = render_grid(
         state.agent_pos,
         state.goal_pos,
         jnp.zeros_like(state.agent_pos[:, 0], dtype=jnp.int32),  # No direction in toy_coop
-        height=5,
-        width=5,
+        height=size,
+        width=size,
     )
     return img

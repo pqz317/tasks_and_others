@@ -18,8 +18,7 @@ from flax import struct
 #     follower = 2  # always follows the ego agent
 
 @struct.dataclass
-class FixedOtherState:
-    coop_env_state: State 
+class FixedOtherState(State):
     # 0: always goes towards first goal position
     # 1: always goes towards second goal position
     # 2: always follows the ego agent
@@ -102,7 +101,7 @@ class CoopForagingFixedOther(MultiAgentEnv):
             follower_action
         )
 
-    def reset(self, key: chex.PRNGKey) -> Tuple[chex.Array, FixedOtherState]:
+    def reset(self, key: chex.PRNGKey, params={'random_reset_fn': 'reset_all'}) -> Tuple[Dict[str, chex.Array], State]:
         """
         Reset the environment and return the initial observation for the trainable agent.
         """
@@ -111,13 +110,36 @@ class CoopForagingFixedOther(MultiAgentEnv):
         other_agent_type_idx = jax.random.choice(sub_key, jnp.array([0, 1, 2]), p=jnp.array([0.25, 0.25, 0.5]))
         obs, state = self.env.reset(new_key)
         fixed_other_agent_state = FixedOtherState(
-            coop_env_state=state, 
+            agent_pos=state.agent_pos,
+            goal_pos=state.goal_pos,
+            other_goal_pos=state.other_goal_pos,
+            time=state.time,
+            terminal=state.terminal,
             other_agent_type=other_agent_type_idx,
         )
-        return obs[self.agent_id], fixed_other_agent_state
+        return {self.agent_id: obs[self.agent_id]}, fixed_other_agent_state
     
+    def reset_with_other_agent(self, key: chex.PRNGKey, other_agent_type_idx: int) -> Tuple[Dict[str, chex.Array], State]:
+        """
+        Reset the environment and return the initial observation for the trainable agent.
+        """
+        new_key, sub_key = jax.random.split(key)
+        # Sample the other agent type, with equal prob of being follower/leader. 
+        obs, state = self.env.reset(new_key)
+        fixed_other_agent_state = FixedOtherState(
+            agent_pos=state.agent_pos,
+            goal_pos=state.goal_pos,
+            other_goal_pos=state.other_goal_pos,
+            time=state.time,
+            terminal=state.terminal,
+            other_agent_type=other_agent_type_idx,
+        )
+        return {self.agent_id: obs[self.agent_id]}, fixed_other_agent_state
+    
+    def custom_reset_fn(self, key, random_reset=False, debug=False):
+        return self.env.custom_reset_fn(key, random_reset=random_reset, debug=debug)
 
-    def step(self, key: chex.PRNGKey, state: FixedOtherState, action: chex.Array) -> Tuple[chex.Array, FixedOtherState, float, bool, Dict]:
+    def step_env(self, key: chex.PRNGKey, state: FixedOtherState, action: chex.Array) -> Tuple[chex.Array, FixedOtherState, float, bool, Dict]:
         """
         Take a step in the environment with the trainable agent's action and the fixed policy for the other agent.
         """
@@ -126,7 +148,7 @@ class CoopForagingFixedOther(MultiAgentEnv):
         fixed_action = jax.lax.switch(
             state.other_agent_type,
             self.fixed_policy_map,
-            state.coop_env_state
+            state
         )
         # Combine actions for both agents
         actions = {
@@ -135,16 +157,54 @@ class CoopForagingFixedOther(MultiAgentEnv):
         }
 
         # Step the environment
-        obs, next_state, rewards, dones, infos = self.env.step_env(key, state.coop_env_state, actions)
+        obs, next_state, rewards, dones, infos = self.env.step_env(key, state, actions)
 
-        next_state = FixedOtherState(coop_env_state=next_state, other_agent_type=state.other_agent_type)
+        next_state = FixedOtherState(
+            agent_pos=next_state.agent_pos,
+            goal_pos=next_state.goal_pos,
+            other_goal_pos=next_state.other_goal_pos,
+            time=next_state.time,
+            terminal=next_state.terminal,
+            other_agent_type=state.other_agent_type,
+        )
         # Return the observation, reward, and done flag for the trainable agent
-        return obs["agent_0"], next_state, rewards["agent_0"], dones["agent_0"], infos
+        return (
+            {self.agent_id: obs[self.agent_id]}, #obs
+            next_state, #state
+            {self.agent_id: rewards[self.agent_id]}, #rewards
+            {self.agent_id: dones[self.agent_id],  "__all__": dones["__all__"]}, #dones
+            {"shaped_reward": {self.agent_id: 0}}, #infos
+        )
 
     @partial(jax.jit, static_argnums=[0])
     def is_terminal(self, state: FixedOtherState) -> bool:
         """Check if episode is done."""
         return self.env.is_terminal(state.coop_env_state)
+    
+
+    @property
+    def held_out_agent_pos(self):
+        return self.env.held_out_agent_pos
+
+    @held_out_agent_pos.setter
+    def held_out_agent_pos(self, value):
+        self.env.held_out_agent_pos = value
+
+    @property
+    def held_out_goal_pos(self):
+        return self.env.held_out_goal_pos
+
+    @held_out_goal_pos.setter
+    def held_out_goal_pos(self, value):
+        self.env.held_out_goal_pos = value
+
+    @property
+    def held_out_other_goal_pos(self):
+        return self.env.held_out_other_goal_pos
+
+    @held_out_other_goal_pos.setter
+    def held_out_other_goal_pos(self, value):
+        self.env.held_out_other_goal_pos = value
 
     @property
     def name(self) -> str:

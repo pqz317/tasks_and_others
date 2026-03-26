@@ -1,15 +1,19 @@
 # "ENV_NAME": "ToyCoop"  # ToyCoop or overcooked
 # "ENV_NAME": "overcooked"  # ToyCoop or overcooked
-"ENV_NAME": "CoopForaging"  # ToyCoop or overcooked
+# "ENV_NAME": "CoopForaging"  # ToyCoop or overcooked
+"ENV_NAME": "CoopForagingFixedOther"  # ToyCoop or overcooked
 
 "LR": 3e-4
 "NUM_ENVS": 512
 # NUM_ENVS: 64
+# NUM_ENVS: 2
 "NUM_SEEDS": 1
 "NUM_STEPS": 100
 "FC_DIM_SIZE": 128
 "GRU_HIDDEN_DIM": 128
-"TOTAL_TIMESTEPS": 1e8
+"TOTAL_TIMESTEPS": 1e9
+# "TOTAL_TIMESTEPS": 1e8
+
 "MAX_TRAIN_STEPS": 3e9
 
 # "TOTAL_TIMESTEPS": 1e5
@@ -22,14 +26,16 @@
 "CLIP_EPS": 0.2
 "SCALE_CLIP_EPS": False
 "ENT_COEF": 0.005
+# "ENT_COEF": 0.05
+
 "VF_COEF": 1.0
 "MOA_COEF": 1.0
 "MAX_GRAD_NORM": 0.5
 "ACTIVATION": "relu"
 "ANNEAL_LR": True
-"SEED": 0
+"SEED": 1
 "ENV_KWARGS": 
-  "random_reset" : False # relevant for which env to train/test on. If true, it is CEC, otherwise single task
+  "random_reset" : True # relevant for which env to train/test on. If true, it is CEC, otherwise single task
   "max_steps": 100
 
   "check_held_out": False  # if false, we don't check if the reset env is held out
@@ -37,6 +43,7 @@
   "debug": False
   "partial_obs": False
   "incentivize_strat": 2 # choose [0, 1, 2, 3] for top, bottom, none, or multiple
+  "size": 8
   # overcooked specific kwargs
   "shuffle_inv_and_pot": False # if true, we shuffle pot status and inventory
   "layout": "cramped_room_9"  # relevant for overcooked, all CEC compatible envs have the "_9" in the name at the end

@@ -29,10 +29,10 @@ class State:
 
 class ToyCoop(MultiAgentEnv):
     """Simple 5x5 cooperative gridworld"""
-    def __init__(self, max_steps: int = 100, random_reset: bool = False, debug: bool = False, check_held_out: bool = False, partial_obs: bool = False, incentivize_strat: int = 2):
+    def __init__(self, max_steps: int = 100, random_reset: bool = False, debug: bool = False, check_held_out: bool = False, partial_obs: bool = False, incentivize_strat: int = 2, size: int = 5):
         super().__init__(num_agents=2)
-        self.width = 5
-        self.height = 5
+        self.width = size
+        self.height = size
         self.max_steps = max_steps
         self.random_reset = random_reset
         self.debug = debug
