@@ -39,7 +39,7 @@ singularity exec \
     /bin/python -u /src/tasks_and_others/baselines/CEC/ippo_general.py \
     ENV_NAME=overcooked \
     NUM_STEPS=256 \
-    TOTAL_TIMESTEPS=3e9 \
+    TOTAL_TIMESTEPS=1e9 \
     FC_DIM_SIZE=256 \
     GRU_HIDDEN_DIM=256 \
     GRAPH_NET=True \
