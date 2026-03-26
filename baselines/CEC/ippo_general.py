@@ -202,8 +202,6 @@ class ActorCriticRNN(nn.Module):
             embedding = nn.Dense(self.config["GRU_HIDDEN_DIM"], kernel_init=orthogonal(2), bias_init=constant(0.0))(embedding)
             embedding = nn.relu(embedding)
         embedding = embedding.reshape((batch_size, num_envs, -1))
-        print("result of ScannedRNN")
-        print(embedding)
         #########
         # Actor
         #########
@@ -274,8 +272,6 @@ def batchify(x: dict, agent_list, num_actors):
     """
     Converts a dict of arrays (one per agent) into a single array
     """
-    # jax.debug.print(x)
-    # jax.debug.print(agent_list)
     x = jnp.stack([x[a] for a in agent_list])
     return x.reshape((num_actors, -1))
 
@@ -480,15 +476,12 @@ def make_train(config, update_step=0):
 
                     def _loss_fn(params, init_hstate, traj_batch, gae, targets):
                         # RERUN NETWORK
-                        print("calling during re-run to compute losses")
                         traj_batch.obs
                         _, pi, value = network.apply(
                             params,
                             jax.tree_map(lambda h: h.squeeze(), init_hstate),
                             (traj_batch.obs, traj_batch.done, traj_batch.agent_positions),
                         )
-                        print(pi.probs)
-                        print(traj_batch.action)
                         log_prob = pi.log_prob(traj_batch.action)
 
                         # CALCULATE VALUE LOSS

@@ -27,7 +27,6 @@ singularity exec \
     --nv \
     --pwd /src/tasks_and_others \
     --env XLA_PYTHON_CLIENT_PREALLOCATE=false \
-    --env XLA_PYTHON_CLIENT_MEM_FRACTION=0.25 \
     --env TF_FORCE_GPU_ALLOW_GROWTH=true \
     --env SLURM_JOB_ID=${SLURM_JOB_ID} \
     --env XLA_FLAGS=--xla_gpu_strict_conv_algorithm_picker=false\ --xla_gpu_enable_cudnn_frontend=false \
